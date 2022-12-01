@@ -43,9 +43,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-// app.get('/',(req,res)=>{
-//     res.send('heelo');
-// });
+app.get('/',(req,res)=>{
+    res.send('heelo');
+});
 
 
 
