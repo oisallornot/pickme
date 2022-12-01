@@ -37,7 +37,7 @@ if(process.env.NODE_ENV==='production'){
 }
 
 app.use(cors({
-    origin: ['http://localhost:3000','pickme.com'],
+    origin: ['http://localhost:3000','pickme.com','http://3.39.22.166'],
     credentials:true,
 }));
 
