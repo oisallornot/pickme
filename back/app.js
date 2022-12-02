@@ -31,15 +31,19 @@ if(process.env.NODE_ENV==='production'){
     app.use(hpp());
     app.use(helmet());
     
+    app.use(cors({
+        origin: 'bitfrommind.com',
+        credentials:true,
+    }));
 }else{
     app.use(morgan('dev'));
+    app.use(cors({
+        origin: true,
+        credentials:true,
+    }));
     
 }
 
-app.use(cors({
-    origin: ['http://localhost:3000','bitfrommind.com'],
-    credentials:true,
-}));
 
 app.use('/',express.static(path.join(__dirname,'uploads')))
 
