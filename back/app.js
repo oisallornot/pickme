@@ -37,7 +37,7 @@ if(process.env.NODE_ENV==='production'){
 }
 
 app.use(cors({
-    origin: ['http://localhost:3000','pickme.com','http://3.39.22.166'],
+    origin: ['http://localhost:3000','bitfrommind.com'],
     credentials:true,
 }));
 
@@ -50,6 +50,11 @@ app.use(session({
     saveUninitialized:false,
     resave:false,
     secret:process.env.COOKIE_SECRET,
+    cookie:{
+        httpOnly:true,
+        secure:false,
+        domain: process.env.NODE_ENV==='production' &&'.bitfrommind.com'
+    }
 }));
 app.use(passport.initialize());
 app.use(passport.session());

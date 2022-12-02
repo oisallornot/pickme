@@ -10,6 +10,10 @@ module.exports=()=>{
         passwordField:'password',
     },async (email,password,done)=>{
         try{
+            console.log('이메일뭐야?')
+            console.log(email)
+            console.log('패스워드뭐야?')
+            console.log(password)
             const user = await User.findOne({
                 where:{email}
             });
