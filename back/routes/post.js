@@ -6,8 +6,8 @@ const{isLoggedIn} =require('./middlewares')
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
-// const multerS3 = require('multer-s3');
-// const AWS= require('aws-sdk');
+const multerS3 = require('multer-s3');
+const AWS= require('aws-sdk');
 
 
 try{
@@ -17,7 +17,12 @@ try{
     console.log('upload 폴더가 없습니다.')
     fs.mkdirSync('uploads')
 }
-
+AWS.config.update({
+    accessKeyId: process.env.S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    region: 'ap-northeast-2',
+  });
+  
 const upload = multer({
     storage:multer.diskStorage({
         destination(req,file,done){
