@@ -6,6 +6,10 @@ const{isLoggedIn} =require('./middlewares')
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const multerS3 = require('multer-s3');
+const AWS= require('aws-sdk');
+
+
 
 try{
     fs.accessSync('uploads');
@@ -15,16 +19,18 @@ try{
     fs.mkdirSync('uploads')
 }
 
-const upload = multer({
-    storage:multer.diskStorage({
-        destination(req,file,done){
-            done(null,'uploads');
-        },
-        filename(req,file,done){
-            const ext =path.extname(file.originalname); //확장자추출(png)
-            const basename =path.basename(file.originalname, ext);
 
-            done(null,basename+ '_'+ new Date().getTime() +ext);
+AWS.config.update({
+    accessKeyId: process.env.S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    region: 'ap-northeast-2',
+})
+const upload = multer({
+    storage:multerS3({
+        s3:new AWS.S3(),
+        bucket:'react-pickme-s3',
+        key(req,file,cb){
+            cb(null,`original/${Date.now()}_${path.basename(file.originalname)}`)
         }
     }),
     limits: {fileSize: 20 * 1024 * 1024},
@@ -185,7 +191,7 @@ router.post('/:postId/comment',isLoggedIn,async(req,res,next)=>{
 
 router.post('/images',isLoggedIn,upload.array('image'),(req,res,next)=>{
     console.log(req.files);
-    res.json(req.files.map((v)=>v.filename ))
+    res.json(req.files.map((v)=>v.location ))
 })
 
 
