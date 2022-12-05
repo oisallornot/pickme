@@ -191,7 +191,7 @@ router.post('/:postId/comment',isLoggedIn,async(req,res,next)=>{
 
 router.post('/images',isLoggedIn,upload.array('image'),(req,res,next)=>{
     console.log(req.files);
-    res.json(req.files.map((v)=>v.location ))
+    res.json(req.files.map((v)=>v.location.replace(/\/original\//, '/thumb/') ))
 })
 
 
@@ -297,6 +297,8 @@ router.get('/:postId',async(req,res,next)=>{
             model: User, // 좋아요 누른 사람
             as: 'Likers',
             attributes: ['id'],
+
+            
           }],
         });
         res.status(200).json(post);
