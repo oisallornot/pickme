@@ -35,6 +35,11 @@ const upload = multer({
   }),
     limits: {fileSize: 20 * 1024 * 1024},
 })
+router.post('/images',isLoggedIn,upload.array('image'),(req,res,next)=>{
+    console.log(req.files);
+    res.json(req.files.map((v)=>  v.location.replace(/\/original\//, '/thumb/') ))
+
+})
 
 router.post('/',isLoggedIn,upload.none(),async(req,res)=>{
     try{
@@ -189,10 +194,6 @@ router.post('/:postId/comment',isLoggedIn,async(req,res,next)=>{
     }
 });
 
-router.post('/images',isLoggedIn,upload.array('image'),(req,res,next)=>{
-    console.log(req.files);
-    res.json(req.files.map((v)=>v.location.replace(/\/original\//, '/thumb/') ))
-})
 
 
 
