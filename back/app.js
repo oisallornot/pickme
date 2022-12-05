@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const port = 80;
+const port = 3065;
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const postRouter = require('./routes/post');
