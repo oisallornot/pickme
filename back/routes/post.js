@@ -6,7 +6,7 @@ const{isLoggedIn} =require('./middlewares')
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
-// const multerS3 = require('multer-s3');
+const multerS3 = require('multer-s3');
 const AWS= require('aws-sdk');
 
 
