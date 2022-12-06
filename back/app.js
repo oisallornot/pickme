@@ -25,14 +25,15 @@ db.sequelize.sync()
 .catch(console.error);
 passportConfig();
 
-app.set('trust proxy',1)
+
 if(process.env.NODE_ENV==='production'){
+    app.enable('trust proxy');
     app.use(morgan('combined'));
     app.use(hpp());
-    app.use(helmet());
+    app.use(helmet({ contentSecurityPolicy: false }));
     
     app.use(cors({
-        origin: 'bitfrommind.com',
+        origin: 'https://bitfrommind.com',
         credentials:true,
     }));
 }else{
@@ -54,7 +55,7 @@ app.use(session({
     saveUninitialized:false,
     resave:false,
     secret:process.env.COOKIE_SECRET,
-    proxy:true,
+    proxy: process.env.NODE_ENV === 'production',
     cookie:{
         httpOnly:true,
         secure:false,
