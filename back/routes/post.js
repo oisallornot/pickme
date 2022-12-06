@@ -1,14 +1,16 @@
 const express = require('express');
-const { default: next } = require('next');
 const multer = require('multer');
-const {Post,Image,Comment, User, Hashtag} = require('../models');
-const{isLoggedIn} =require('./middlewares')
-const router = express.Router();
 const path = require('path');
 const fs = require('fs');
-const AWS= require('aws-sdk');
 const multerS3 = require('multer-s3');
+const AWS = require('aws-sdk');
+// const nodemailer = require('nodemailer');
 
+const { Post, Image, Comment, User, Hashtag } = require('../models');
+const { isLoggedIn } = require('./middlewares');
+
+const prod = process.env.NODE_ENV === 'production';
+const router = express.Router();
 
 try{
     fs.accessSync('uploads');
@@ -35,6 +37,55 @@ const upload = multer({
   }),
     limits: {fileSize: 20 * 1024 * 1024},
 })
+
+router.post('/', isLoggedIn, upload.none(), async (req, res, next) => { // POST /post
+    try {
+      const hashtags = req.body.content.match(/#[^\s#]+/g);
+      const post = await Post.create({
+        content: req.body.content,
+        UserId: req.user.id,
+      });
+      if (hashtags) {
+        const result = await Promise.all(hashtags.map((tag) => Hashtag.findOrCreate({
+          where: { name: tag.slice(1).toLowerCase() },
+        }))); // [[노드, true], [리액트, true]]
+        await post.addHashtags(result.map((v) => v[0]));
+      }
+      if (req.body.image) {
+        if (Array.isArray(req.body.image)) { // 이미지를 여러 개 올리면 image: [제로초.png, 부기초.png]
+          const images = await Promise.all(req.body.image.map((image) => Image.create({ src: image })));
+          await post.addImages(images);
+        } else { // 이미지를 하나만 올리면 image: 제로초.png
+          const image = await Image.create({ src: req.body.image });
+          await post.addImages(image);
+        }
+      }
+      const fullPost = await Post.findOne({
+        where: { id: post.id },
+        include: [{
+          model: Image,
+        }, {
+          model: Comment,
+          include: [{
+            model: User, // 댓글 작성자
+            attributes: ['id', 'nickname'],
+          }],
+        }, {
+          model: User, // 게시글 작성자
+          attributes: ['id', 'nickname'],
+        }, {
+          model: User, // 좋아요 누른 사람
+          as: 'Likers',
+          attributes: ['id'],
+        }]
+      })
+      res.status(201).json(fullPost);
+    } catch (error) {
+      console.error(error);
+      next(error);
+    }
+  });
+
 router.post('/images',isLoggedIn,upload.array('image'),(req,res,next)=>{
     console.log(req.files);
     res.json(req.files.map((v)=>  v.location.replace(/\/original\//, '/thumb/') ))
@@ -42,66 +93,6 @@ router.post('/images',isLoggedIn,upload.array('image'),(req,res,next)=>{
 
 })
 
-router.post('/',isLoggedIn,upload.none(),async(req,res)=>{
-    try{
-        const hashtags = req.body.content.match(/#[^\s#]+/g);
-        const post =    await Post.create({
-                content: req.body.content,
-                UserId: req.user.id,
-            })
-
-            if(hashtags){
-          const result =  await Promise.all(hashtags.map((tag)=>Hashtag.findOrCreate({
-                where :{name:tag.slice(1).toLowerCase()}})))
-                await post.addHashtags(result.map((v)=>v[0]));
-            }
-
-            if(req.body.image){
-                if(Array.isArray(req.body.image)){
-                    console.log('이미지 url어떻게나오나보자')
-                    console.log(req.body.image)
-                    console.log(typeof(req.body.image[0]))
-                const images = await Promise.all(req.body.image.map((image)=>Image.create({src:image})));
-                await post.addImages(images);
-            }else{  
-                console.log('이미지 url어떻게나오나보자2')
-                console.log(req.body.image)
-                console.log(typeof(req.body.image))
-                const image = await Image.create({src:req.body.image})
-                console.log('이미지 url들어갔나')
-                console.log(image)
-                
-                await post.addImages(image);
-                }
-            }
-
-            const fullPost = await Post.findOne({
-                where:{id:post.id},
-                include:[{
-                    model:Image,
-                },{
-                    model:Comment,
-                    include:[{
-                        model:User,
-                        attributes:['id','nickname']
-                    }]
-                },{
-                    model:User,
-                    attributes:['id','nickname']
-                },{
-                    model:User,
-                    as:'Likers',
-                    attributes:['id']
-                    
-                }]
-            })
-            res.status(201).json(fullPost);
-
-    }catch(error){
-        console.error(error);
-        next(error);
-    }
-});
 
 
 router.delete('/',(req,res)=>{
