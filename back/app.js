@@ -52,7 +52,7 @@ app.use(session({
   proxy: process.env.NODE_ENV === 'production',
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,
     domain: process.env.NODE_ENV === 'production' && '.bitfrommind.com'
   },
 }));

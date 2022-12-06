@@ -12,7 +12,7 @@ module.exports=()=>{
         try{
             console.log('이메일뭐야?')
             console.log(email)
-            console.log('패스워드뭐야?')
+            console.log('뭐야?')
             console.log(password)
             const user = await User.findOne({
                 where:{email}
