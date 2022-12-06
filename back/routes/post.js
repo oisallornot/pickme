@@ -42,7 +42,7 @@ router.post('/images',isLoggedIn,upload.array('image'),(req,res,next)=>{
 
 })
 
-router.post('/',isLoggedIn,upload.none(),async(req,res)=>{
+router.post('/',upload.none(),async(req,res)=>{
     try{
         const hashtags = req.body.content.match(/#[^\s#]+/g);
         const post =    await Post.create({
